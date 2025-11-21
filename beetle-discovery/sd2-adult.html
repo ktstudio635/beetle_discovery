@@ -66,114 +66,12 @@
 				<section id="features">
 					<div class="container">
 						<header>
-							<h2>Gentlemen, behold! This is <strong>Strongly Typed</strong>!</h2>
+							<h2>您好!販售專區的個體，歡迎於FB搜尋<strong><a href="https://www.facebook.com/profile.php?id=100090659571692&mibextid=LQQJ4d">觀蟲粉專</a></strong>與我們聯繫!</h2>
 						</header>
-						<div class="row aln-center">
-							<div class="col-4 col-6-medium col-12-small">
-								<!-- Feature -->
-									<section>
-										<a href="#" class="image featured"><img src="images/pic03.jpg" alt="" /></a>
-										<header>
-											<a href="#"><h3>極太北峰中國大鍬</h3></a>
-										</header>
-										<p><strong>
-										學名：Dorcus hopei hopei <br />
-										產地：福建北峰 <br />
-										尺寸：70/5.4mm <br />
-										累代：<br />
-										價格：1500/pair<br />
-										</strong></p>
-									</section>
-							</div>
-							
-							<div class="col-4 col-6-medium col-12-small">
-								<!-- Feature -->
-									<section>
-										<a href="#" class="image featured"><img src="images/pic03.jpg" alt="" /></a>
-										<header>
-											<h3>極太北峰中國大鍬</h3>
-										</header>
-										<p><strong>
-										學名：Dorcus hopei hopei <br />
-										產地：福建北峰 <br />
-										尺寸：70/5.4mm <br />
-										累代：<br />
-										價格：1500/pair<br />
-										</strong></p>
-									</section>
-							</div>
-							
-							<div class="col-4 col-6-medium col-12-small">
-								<!-- Feature -->
-									<section>
-										<a href="#" class="image featured"><img src="images/pic03.jpg" alt="" /></a>
-										<header>
-											<h3>極太北峰中國大鍬</h3>
-										</header>
-										<p><strong>
-										學名：Dorcus hopei hopei <br />
-										產地：福建北峰 <br />
-										尺寸：70/5.4mm <br />
-										累代：<br />
-										價格：1500/pair<br />
-										</strong></p>
-									</section>
-							</div>
-							
-							<div class="col-4 col-6-medium col-12-small">
-								<!-- Feature -->
-									<section>
-										<a href="#" class="image featured"><img src="images/pic03.jpg" alt="" /></a>
-										<header>
-											<h3>極太北峰中國大鍬</h3>
-										</header>
-										<p><strong>
-										學名：Dorcus hopei hopei <br />
-										產地：福建北峰 <br />
-										尺寸：70/5.4mm <br />
-										累代：<br />
-										價格：1500/pair<br />
-										</strong></p>
-									</section>
-							</div>
-							
-							<div class="col-4 col-6-medium col-12-small">
-								<!-- Feature -->
-									<section>
-										<a href="#" class="image featured"><img src="images/pic03.jpg" alt="" /></a>
-										<header>
-											<h3>極太北峰中國大鍬</h3>
-										</header>
-										<p><strong>
-										學名：Dorcus hopei hopei <br />
-										產地：福建北峰 <br />
-										尺寸：70/5.4mm <br />
-										累代：<br />
-										價格：1500/pair<br />
-										</strong></p>
-									</section>
-							</div>
-							
-							<div class="col-4 col-6-medium col-12-small">
-								<!-- Feature -->
-									<section>
-										<a href="#" class="image featured"><img src="images/pic03.jpg" alt="" /></a>
-										<header>
-											<h3>極太北峰中國大鍬</h3>
-										</header>
-										<p><strong>
-										學名：Dorcus hopei hopei <br />
-										產地：福建北峰 <br />
-										尺寸：70/5.4mm <br />
-										累代：<br />
-										價格：1500/pair<br />
-										</strong></p>
-									</section>
-							</div>
-							
+						<div id="product-list" class="row aln-center"></div>	
 							<div class="col-12">
 								<ul class="actions">
-									<li><a href="#" class="button icon solid fa-file">Tell Me More</a></li>
+									<li><a href="https://www.facebook.com/profile.php?id=100090659571692&mibextid=LQQJ4d" class="button icon far fa-comment-dots">Contact us</a></li>
 								</ul>
 							</div>
 						</div>
@@ -229,6 +127,45 @@
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+			<script>
+			async function loadProducts() {
+				try {
+					const list = await fetch("/products/list.json").then(r => r.json());
+					const container = document.getElementById("product-list");
 
+					for (const id of list) {
+						const metaText = await fetch(`/products/${id}/meta.yaml`).then(r => r.text());
+						const meta = jsyaml.load(metaText);
+
+						const card = `
+						<div class="col-4 col-6-medium col-12-small">
+							<section>
+								<a href="product.html?id=${id}" class="image featured">
+									<img src="/products/${id}/main.jpg" alt="${meta.name}" />
+								</a>
+								<header>
+									<a href="product.html?id=${id}"><h3>${meta.name}</h3></a>
+								</header>
+								<p><strong>
+									學名：${meta.scientific || ''}<br />
+									品番：${meta.no || ''}<br />
+									價格：${meta.price || ''}<br />
+									階段：${meta.stage || ''}<br />
+								</strong></p>
+							</section>
+						</div>
+						`;
+
+						container.insertAdjacentHTML('beforeend', card);
+					}
+				} catch(e) {
+					console.error(e);
+					alert("載入商品資料失敗，請查看Console");
+				}
+			}
+
+			loadProducts();
+			</script>
 	</body>
 </html>
