@@ -1,0 +1,154 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>商品詳情</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <style>
+        /* 輪播基本樣式 */
+        .slideshow-container {
+            position: relative;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .slides {
+            display: none;
+            width: 100%;
+        }
+
+        .prev, .next {
+            cursor: pointer;
+            position: absolute;
+            top: 50%;
+            padding: 12px;
+            margin-top: -22px;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            user-select: none;
+            border-radius: 3px;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .prev { left: 0; }
+        .next { right: 0; }
+
+        .dot-container {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .dot {
+            cursor: pointer;
+            height: 12px;
+            width: 12px;
+            margin: 0 3px;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .active-dot {
+            background-color: #717171;
+        }
+    </style>
+</head>
+<body>
+<div id="page-wrapper">
+
+    <section id="header">
+        <div class="container">
+            <h1 id="logo"><a href="index.html">❀觀蟲語錄❀</a></h1>
+            <p>商品詳情</p>
+        </div>
+    </section>
+
+    <section id="features">
+        <div class="container">
+            <div id="product-detail"></div>
+        </div>
+    </section>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<script>
+    // 取得 URL 參數
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+
+    async function loadProduct() {
+        const id = getQueryParam('id');
+        if (!id) {
+            document.getElementById('product-detail').innerHTML = "<p>找不到商品ID</p>";
+            return;
+        }
+
+        // 讀 meta.yaml
+        const metaText = await fetch(`/products/${id}/meta.yaml`).then(r => r.text());
+        const meta = jsyaml.load(metaText);
+
+        // 組輪播圖片
+        const images = meta.images || ['main.jpg'];
+        let slidesHTML = images.map((img, idx) => `
+            <div class="slides">
+                <img src="/products/${id}/${img}" alt="${meta.name}" />
+            </div>
+        `).join('');
+
+        const dotsHTML = images.map((_, idx) => `<span class="dot"></span>`).join('');
+
+        const detailHTML = `
+            <h2>${meta.name}</h2>
+            <p>
+                學名：${meta.scientific || ''}<br />
+                品番：${meta.no || ''}<br />
+                價格：${meta.price || ''}<br />
+                階段：${meta.stage || ''}<br />
+                說明：${meta.description || ''}<br />
+            </p>
+
+            <div class="slideshow-container">
+                ${slidesHTML}
+                <a class="prev">&#10094;</a>
+                <a class="next">&#10095;</a>
+            </div>
+            <div class="dot-container">
+                ${dotsHTML}
+            </div>
+        `;
+
+        const container = document.getElementById('product-detail');
+        container.innerHTML = detailHTML;
+
+        // 輪播 JS
+        let slideIndex = 0;
+        const slides = container.getElementsByClassName('slides');
+        const dots = container.getElementsByClassName('dot');
+
+        function showSlide(n) {
+            if (n >= slides.length) slideIndex = 0;
+            if (n < 0) slideIndex = slides.length - 1;
+            for (let i = 0; i < slides.length; i++) slides[i].style.display = "none";
+            for (let i = 0; i < dots.length; i++) dots[i].className = dots[i].className.replace(" active-dot", "");
+            slides[slideIndex].style.display = "block";
+            dots[slideIndex].className += " active-dot";
+        }
+
+        showSlide(slideIndex);
+
+        container.querySelector('.prev').addEventListener('click', () => { slideIndex--; showSlide(slideIndex); });
+        container.querySelector('.next').addEventListener('click', () => { slideIndex++; showSlide(slideIndex); });
+        Array.from(dots).forEach((dot, i) => {
+            dot.addEventListener('click', () => { slideIndex = i; showSlide(slideIndex); });
+        });
+    }
+
+    loadProduct();
+</script>
+</body>
+</html>
